@@ -61,13 +61,21 @@ class WavChannel(PIndirectChannel):
         super(WavChannel, self).__init__()
 
         if input_filename:
-            self._input_wav = wave.open(input_filename, "rb")
+            try:
+                self._input_wav = wave.open(input_filename, "rb")
+            except Exception as e:
+                print "Error opening wav input file:", repr(e)
+                self._input_wav = None
         else:
             self._input_wav = None
 
         if output_filename:
-            self._output_wav = wave.open(output_filename, "wb")
-            self._output_wav.setparams(WavChannel.DEFAULT_WAVE_PARAMETERS)
+            try:
+                self._output_wav = wave.open(output_filename, "wb")
+                self._output_wav.setparams(WavChannel.DEFAULT_WAVE_PARAMETERS)
+            except Exception as e:
+                print "Error opening wav output file:", repr(e)
+                self._output_wav = None
         else:
             self._output_wav = None
 
@@ -204,7 +212,7 @@ class Client(H323EndPoint):
         return codec.AttachChannel(wav_channel, autoDelete = False)
 
 def run_client(args):
-    client = Client()
+    client = Client(args.input_file, args.output_file)
     if not client.initialise(args.interface, args.port, args.user, args.gatekeeper):
         print "Error initialising end point"
         return
