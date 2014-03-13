@@ -205,7 +205,9 @@ class Client(H323EndPoint):
 
 def run_client(args):
     client = Client()
-    client.initialise(args.interface, args.port, args.user, args.gatekeeper)
+    if not client.initialise(args.interface, args.port, args.user, args.gatekeeper):
+        print "Error initialising end point"
+        return
 
     if args.listen:
         print "Waiting for incoming calls for \"%s\"" % (client.GetLocalUserName(),)
@@ -222,8 +224,6 @@ def run_client(args):
 
 def main():
     args = parse_args()
-
-    print args
 
     if not args.listen and args.destination is None:
         print "Invalid operation mode (choose either to listen or to dial)"
