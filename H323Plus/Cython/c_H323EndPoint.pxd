@@ -13,6 +13,8 @@ cdef extern from "Wrappers/WrapperH323EndPoint.h":
 
         void SetLocalUserName(const c_PString & name)
         const c_PString & GetLocalUserName() const
+        PBoolean AddAliasName(const c_PString & name)
+
         void LoadBaseFeatureSet()
 
         PINDEX AddAllCapabilities(PINDEX descriptorNum, PINDEX simultaneous, const c_PString & name)

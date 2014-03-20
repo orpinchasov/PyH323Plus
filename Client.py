@@ -9,6 +9,8 @@ from PIndirectChannel import PIndirectChannel
 from H323ListenerTCP import H323ListenerTCP
 from H323EndPoint import H323EndPoint
 
+from PTrace import Initialise
+
 import wave
 import time
 import argparse
@@ -21,7 +23,13 @@ def parse_args():
     parser.add_argument('-f', '--input-file', type=str, default=None,
                         help='input file name')
     parser.add_argument('-i', '--interface', type=str, default='*',
-                        help='interface name')
+                        help='interface (default \'*\')')
+    parser.add_argument('-g', '--gatekeeper', type=str, default=None,
+                        help='gatekeeper address')
+    parser.add_argument('-u', '--user', type=str, default=None, action='append',
+                        help='set local alias name(s)')
+    parser.add_argument('-p', '--port', type=int, default=1720,
+                        help='listening port (default 1720)')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-l', '--listen', action='store_true',
@@ -95,20 +103,34 @@ class WavChannel(PIndirectChannel):
         return True
 
 class Client(H323EndPoint):
-    DEFAULT_LISTENING_PORT = 1720
+    def __init__(self, input_filename=None, output_filename=None):
+        super(Client, self).__init__()
 
-    def initialize(self, input_filename=None, output_filename=None):
         self._input_filename = input_filename
         self._output_filename = output_filename
+
+    def initialise(self, interface, port, user=None, gatekeeper=None):
+        if user is not None:
+            self.SetLocalUserName(user[0])
+            for name in user[1:]:
+                self.AddAliasName(name)
 
         self.LoadBaseFeatureSet()
         self.AddAllCapabilities(0, 0x7fffffff, '*')
         self.AddAllUserInputCapabilities(0, 0x7fffffff)
 
-    def listen(self, interface):
         address = Address(interface)
-        listener = H323ListenerTCP(self, address, Client.DEFAULT_LISTENING_PORT)
-        return self.StartListener(listener)
+        listener = H323ListenerTCP(self, address, port)
+        if not self.StartListener(listener):
+            print "Failed to start listener on %s:%d" % (address, port)
+            return False
+
+        if gatekeeper is not None:
+            if not self.UseGatekeeper(gatekeeper):
+                print "Failed to register with gatekeeper at %s" % (gatekeeper,)
+                return False
+
+        return True
 
     def OnIncomingCall(self, connection, setupPDU, alertingPDU):
         print "Incoming call", connection
@@ -132,33 +154,23 @@ class Client(H323EndPoint):
 
         return codec.AttachChannel(wav_channel, autoDelete = False)
 
-def listen(client, interface):
-    if client.listen(interface):
-        print "Listening for an incoming call"
-        return True
-    else:
-        print "Listening failed"
-        return False
-
-def make_call(client, destination):
-    print "Making call to", destination
-    return client.MakeCall(destination, None)
-
 def main():
     args = parse_args()
 
-    client = Client()
-    client.initialize(args.input_file,
-                      args.output_file)
+    print args
 
-    print "Press any key to quit\n\n"
+    client = Client()
+    client.initialise(args.interface, args.port, args.user, args.gatekeeper)
 
     if args.listen:
-        if not listen(client, args.interface):
-            exit(1)
+        print "Waiting for incoming calls for \"%s\"" % (client.GetLocalUserName(),)
+    elif args.destination is not None:
+        print "Initiating call to \"%s\"" % (args.destination,)
+        client.MakeCall(args.destination, None)
     else:
-        make_call(client, args.destination)
+        print "Not enough arguments"
 
+    print "Press any key to quit"
     raw_input()
 
     client.ClearAllCalls(wait = False)

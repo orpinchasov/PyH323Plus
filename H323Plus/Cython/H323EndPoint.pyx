@@ -30,19 +30,26 @@ cdef class H323EndPoint:
 
     def GetLocalUserName(self):
         cdef const c_PString * c_name = &self.thisptr.GetLocalUserName()
+
         return <const unsigned char *>c_name.operator_const_unsigned_char_p()
+
+    def AddAliasName(self, name)
+       cdef const c_PString * c_name = new c_PString(<const char *>name)
+
+       return self.thisptr.AddAliasName(c_name[0])
 
     def LoadBaseFeatureSet(self):
         self.thisptr.LoadBaseFeatureSet()
 
     def AddAllCapabilities(self, descriptorNum, simultaneous, name):
         cdef const c_PString * c_name = new c_PString(<const char *>name)
+
         return self.thisptr.AddAllCapabilities(descriptorNum, simultaneous, c_name[0])
 
     def AddAllUserInputCapabilities(self, descriptorNum, simultaneous):
         self.thisptr.AddAllUserInputCapabilities(descriptorNum, simultaneous)
 
-    def UseGatekeeper(address=None, identifier=None, localAddress=None):
+    def UseGatekeeper(self, address=None, identifier=None, localAddress=None):
         if address is None:
             address = ""
         if identifier is None:
@@ -54,7 +61,7 @@ cdef class H323EndPoint:
         cdef const c_PString * c_identifier = new c_PString(<const char *>identifier)
         cdef const c_PString * c_localAddress = new c_PString(<const char *>localAddress)
 
-        return self.thisptr.UseGatekeeper(address, identifier, localAddress)
+        return self.thisptr.UseGatekeeper(c_address[0], c_identifier[0], c_localAddress[0])
 
     def StartListener(self, listener):
         return self.thisptr.StartListener((<H323ListenerTCP>listener).thisptr)
