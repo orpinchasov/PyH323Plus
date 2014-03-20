@@ -18,6 +18,8 @@ cdef extern from "Wrappers/WrapperH323EndPoint.h":
         PINDEX AddAllCapabilities(PINDEX descriptorNum, PINDEX simultaneous, const c_PString & name)
         void AddAllUserInputCapabilities(PINDEX descriptorNum, PINDEX simultaneous)
 
+        PBoolean UseGatekeeper(const c_PString & address, const c_PString & identifier, const c_PString & localAddress)
+
         # Actual definition requires an H323Listener. Throughout
         # our code we use the H323ListenerTCP class
         PBoolean StartListener(c_H323ListenerTCP * listener)

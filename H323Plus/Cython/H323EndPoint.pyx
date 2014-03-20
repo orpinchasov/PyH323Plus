@@ -42,6 +42,20 @@ cdef class H323EndPoint:
     def AddAllUserInputCapabilities(self, descriptorNum, simultaneous):
         self.thisptr.AddAllUserInputCapabilities(descriptorNum, simultaneous)
 
+    def UseGatekeeper(address=None, identifier=None, localAddress=None):
+        if address is None:
+            address = ""
+        if identifier is None:
+            identifier = ""
+        if localAddress is None:
+            localAddress = ""
+
+        cdef const c_PString * c_address = new c_PString(<const char *>address)
+        cdef const c_PString * c_identifier = new c_PString(<const char *>identifier)
+        cdef const c_PString * c_localAddress = new c_PString(<const char *>localAddress)
+
+        return self.thisptr.UseGatekeeper(address, identifier, localAddress)
+
     def StartListener(self, listener):
         return self.thisptr.StartListener((<H323ListenerTCP>listener).thisptr)
 
