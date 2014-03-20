@@ -1,0 +1,5 @@
+syntax: glob
+*.cpp
+*.h
+*.so
+*.o

@@ -32,7 +32,7 @@ echo:
 # Rules
 Build/%.so: CPP/%.o $(WRAPPER_O_FILES)
 	mkdir -p Build
-	g++ -shared -o "$@" "$<" $(LIBS) $(WRAPPER_O_FILES)
+	g++ -shared -o "$@" "$<" $(WRAPPER_O_FILES) $(LIBS)
 
 CPP/%.o: CPP/%.cpp
 	g++ $(INCLUDE) -fno-strict-aliasing -O3 -Wall -c -o "$@" "$<"
