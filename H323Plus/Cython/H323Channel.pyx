@@ -3,9 +3,15 @@ include "ptlib.pxi"
 from c_H323Channel cimport c_H323Channel
 
 cdef class H323Channel:
+    """This class describes a logical channel between the two endpoints.
+    They may be created and deleted as required in the H245 protocol.
+    """
+
     def __dealloc__(self):
-       if self.thisptr and not self._is_cast:
-           del self.thisptr
+        """Destroy the channel."""
+
+        if self.thisptr and not self._is_cast:
+            del self.thisptr
 
 cdef class cast_H323Channel(H323Channel):
     def __init__(self):

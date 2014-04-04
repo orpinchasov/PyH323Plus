@@ -1,3 +1,5 @@
+// Defines a wrapper class for an H323 end point
+
 #include <Python.h>
 
 #include "WrapperH323EndPoint.h"
@@ -7,15 +9,19 @@
 #include <h323.h>
 
 WrapperH323EndPoint::WrapperH323EndPoint(PyObject *obj): m_obj(obj) {
+    // Call the following to allow Python interaction with
+    // PTLib threads created outside the Python interpreter
 	PyEval_InitThreads();
 
-	if (import_H323EndPoint()) {
-    } else {
+    // Attempt to create the Pythonic object. Manually
+    // increase its reference counter if successful
+	if (0 == import_H323EndPoint()) {
         Py_XINCREF(this->m_obj);
     }
 }
 
 WrapperH323EndPoint::~WrapperH323EndPoint() {
+    // Decrease the Pythonic object reference counter manually
     Py_XDECREF(this->m_obj);
 }
 
@@ -29,6 +35,8 @@ PBoolean WrapperH323EndPoint::OnIncomingCall(H323Connection &connection,
 
     int error;
 
+    // Try to call the overriding Pythonic method.
+    // If it doesn't exist just call the original method
     PBoolean result = cy_call_OnIncomingCall(this->m_obj, &error, connection, setupPDU, alertingPDU);
     if (error) {
         result = H323EndPoint::OnIncomingCall(connection, setupPDU, alertingPDU);

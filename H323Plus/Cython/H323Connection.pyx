@@ -4,15 +4,24 @@ from H323EndPoint cimport H323EndPoint
 from c_PString cimport c_PString
 
 cdef class H323Connection:
+    """This class represents a particular H323 connection between two endpoints."""
+
     def __init__(self, endpoint, callReference, options=0):
+        """Create a new connection."""
+
         self.thisptr = new c_H323Connection(((<H323EndPoint>endpoint).thisptr)[0], callReference, options)
         self._is_cast = False
 
     def __dealloc__(self):
-       if self.thisptr and not self._is_cast:
-           del self.thisptr
+        """Destroy the connection."""
+        if self.thisptr and not self._is_cast:
+            del self.thisptr
 
     def GetRemotePartyName(self):
+        """Get the remote party name.
+        This returns a string indicating the remote parties names and aliases.
+        """
+
         cdef const c_PString *c_name= &self.thisptr.GetRemotePartyName()
         return <const unsigned char *>c_name.operator_const_unsigned_char_p()
 

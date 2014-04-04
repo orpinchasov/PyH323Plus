@@ -1,3 +1,5 @@
+// Defines a wrapper class for an indirect channel
+
 #include <Python.h>
 
 #include "WrapperPIndirectChannel.h"
@@ -6,15 +8,19 @@
 #include <ptlib.h>
 
 WrapperPIndirectChannel::WrapperPIndirectChannel(PyObject *obj): m_obj(obj) {
+    // Call the following to allow Python interaction with
+    // PTLib threads created outside the Python interpreter
 	PyEval_InitThreads();
 
-	if (import_PIndirectChannel()) {
-    } else {
+    // Attempt to create the Pythonic object. Manually
+    // increase its reference counter if successful
+	if (0 == import_PIndirectChannel()) {
         Py_XINCREF(this->m_obj);
     }
 }
 
 WrapperPIndirectChannel::~WrapperPIndirectChannel() {
+    // Decrease the Pythonic object reference counter manually
     Py_XDECREF(this->m_obj);
 }
 
@@ -26,6 +32,8 @@ PBoolean WrapperPIndirectChannel::Close()
 
     int error;
 
+    // Try to call the overriding Pythonic method.
+    // If it doesn't exist just call the original method
     PBoolean result = cy_call_Close(this->m_obj, &error);
     if (error) {
         result = PIndirectChannel::Close();
