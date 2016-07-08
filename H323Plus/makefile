@@ -32,14 +32,14 @@ echo:
 # Rules
 Build/%.so: CPP/%.o $(WRAPPER_O_FILES)
 	mkdir -p Build
-	g++ -shared -o "$@" "$<" $(WRAPPER_O_FILES) $(LIBS)
+	g++ -shared -fPIC -o "$@" "$<" $(WRAPPER_O_FILES) $(LIBS)
 
 CPP/%.o: CPP/%.cpp
-	g++ $(INCLUDE) -fno-strict-aliasing -O3 -Wall -c -o "$@" "$<"
+	g++ $(INCLUDE) -fPIC -fno-strict-aliasing -O3 -Wall -c -o "$@" "$<"
 
 CPP/%.cpp: Cython/%.pyx Cython/%.pxd Cython/c_%.pxd
 	mkdir -p CPP
 	cython --cplus -I../PTLib/Cython -o "$@" "$<"
 
 Wrappers/%.o: Wrappers/%.cpp
-	g++ $(INCLUDE) -O3 -Wall -c -o "$@" "$<"
+	g++ $(INCLUDE) -fPIC -O3 -Wall -c -o "$@" "$<"
